@@ -1,0 +1,168 @@
+
+{% macro extra() %}
+  <input name="_check_conf" id="_check_conf" type="button" class="btn btn-info" value="测试页面设置" />
+  {% if admin_view.can_edit %}
+  <input name="_continue_editing" type="submit" class="btn btn-default" value="{{ _gettext('Save and Continue Editing') }}" />
+  {% endif %}
+{% endmacro %}
+
+{% macro js() %}
+
+
+<div id="_check_result" class="box box-warning box-solid" style="position: fixed; right: 10px; top: 50px; display: none; z-index: 99999; max-width: 50%; max-height: 90%; overflow: auto;">
+  <div class="box-header with-border">
+    <h3 class="box-title">设置测试结果</h3>
+    <div class="box-tools pull-right">
+      <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+      <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+    </div>
+  </div>
+  <div class="box-body">
+    <pre></pre>
+  </div>
+</div>
+
+
+
+<script type="text/javascript">
+$(function () {
+  $('#_check_conf').click(function (e) {
+    e.preventDefault();
+
+    var frm = $('.content form');
+    console.log(frm);
+    $('.content form').ajaxSubmit({
+        url: '{{url_for(".check")}}',
+        success: function(data) {
+
+          var c = data.debugs.join('\n'),
+              d = data.messages.join('\n');
+          // console.log(d);
+          $('#_check_result .box-body').html(['<pre>', c, '\n', d, '</pre>'].join('\n'))
+          $('#_check_result').show();
+
+        }
+    });
+
+
+  })
+
+  $('#type').change(function () {
+    var $this = $(this),
+        val = $this.val();
+    if (val == 0) {
+      $('#div_jscode').show();
+      $('#div_pycode').hide();
+    } else {
+      $('#div_jscode').hide();
+      $('#div_pycode').show();
+    }
+  });
+
+  $('#qrcode').change(function () {
+    var $this = $(this),
+        checked = $this.prop('checked');
+    if (checked) {
+      $('#div_qrcode_jscode').show();
+    } else {
+      $('#div_qrcode_jscode').hide();
+    }
+  });
+
+  $('#events').on('change', 'select', function () {
+    var $this = $(this),
+        $prnt = $this.closest('.inline-form-field'),
+        val = $this.val();
+    console.log('change => ', $prnt);
+    if (val == 0) {
+      $("div[id*='pycode']", $prnt).hide();
+      $("div[id*='jscode']", $prnt).show();
+    } else {
+      $("div[id*='pycode']", $prnt).show();
+      $("div[id*='jscode']", $prnt).hide();
+    }
+
+  })
+
+  $('#events').on('addField', function (e, $tmpl) {
+    console.log('addField', arguments);
+    $('select', $tmpl).trigger('change');
+  })
+
+  // $('#ssiv').change(function () {
+  //   var $this = $(this),
+  //       checked = $this.prop('checked');
+  //   if (checked) {
+  //     $('#div_ssiv_get_type').show();
+  //     $('#div_ssiv_get_jscode').show();
+  //     $('#div_ssiv_get_pycode').show();
+  //     $('#div_ssiv_verify_type').show();
+  //     $('#div_ssiv_verify_jscode').show();
+  //     $('#div_ssiv_verify_pycode').show();
+  //   } else {
+  //     $('#div_ssiv_get_type').hide();
+  //     $('#div_ssiv_get_jscode').hide();
+  //     $('#div_ssiv_get_pycode').hide();
+  //     $('#div_ssiv_verify_type').hide();
+  //     $('#div_ssiv_verify_jscode').hide();
+  //     $('#div_ssiv_verify_pycode').hide();
+  //   }
+
+  //   $('#ssiv_get_type').trigger('change');
+  //   $('#ssiv_verify_type').trigger('change');
+
+  // });
+
+
+  // $('#ssiv_get_type').change(function () {
+  //   var $this = $(this),
+  //       val = $this.val(),
+  //       checked = $('#ssiv').prop('checked');
+
+  //   if (!checked) {
+  //     // $('#div_ssiv_get_jscode').hide();
+  //     // $('#div_ssiv_get_pycode').hide();
+  //     return;
+  //   }
+  //   if (val == 0) {
+  //     $('#div_ssiv_get_jscode').show();
+  //     $('#div_ssiv_get_pycode').hide();
+  //   } else {
+  //     $('#div_ssiv_get_jscode').hide();
+  //     $('#div_ssiv_get_pycode').show();
+  //   }
+
+  // });
+
+  // $('#ssiv_verify_type').change(function () {
+  //   var $this = $(this),
+  //       val = $this.val(),
+  //       checked = $('#ssiv').prop('checked');
+
+  //   if (!checked) {
+  //     // $('#div_ssiv_verify_jscode').hide();
+  //     // $('#div_ssiv_verify_pycode').hide();
+  //     return;
+  //   }
+
+  //   if (val == 0) {
+  //     $('#div_ssiv_verify_jscode').show();
+  //     $('#div_ssiv_verify_pycode').hide();
+  //   } else {
+  //     $('#div_ssiv_verify_jscode').hide();
+  //     $('#div_ssiv_verify_pycode').show();
+  //   }
+
+  // });
+
+
+  $('#type').trigger('change');
+  $('#qrcode').trigger('change');
+  // $('#ssiv').trigger('change');
+  $('#events select').trigger('change');
+  console.log($('#events select'));
+
+});
+</script>
+
+{% endmacro %}

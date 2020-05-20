@@ -1,0 +1,72 @@
+{% import 'admin/lib.html' as lib with context %}
+
+{% macro link(action, url, icon_class=None) %}
+<a class="icon btn-link" href="{{ url }}" title="{{ action.title or '' }}">
+  <i class="{{ icon_class or action.icon_class }}"></i>
+</a>
+{% endmacro %}
+
+{% macro view_row(action, row_id, row) %}
+  {{ link(action, get_url('.details_view', id=row_id, url=return_url), 'fa fa-eye glyphicon glyphicon-eye-open') }}
+{% endmacro %}
+
+{% macro view_row_popup(action, row_id, row) %}
+  {{ lib.add_modal_button(url=get_url('.details_view', id=row_id, url=return_url, modal=True), title=action.title, content='<i class="fa fa-eye fa-lg"></i>') }}
+{% endmacro %}
+
+{% macro edit_row(action, row_id, row) %}
+  {{ link(action, get_url('.edit_view', id=row_id, url=return_url), 'fa fa-edit fa-lg') }}
+{% endmacro %}
+
+{% macro edit_row_popup(action, row_id, row) %}
+  {{ lib.add_modal_button(url=get_url('.edit_view', id=row_id, url=return_url, modal=True), title=action.title, content='<i class="fa fa-edit fa-lg"></i>') }}
+{% endmacro %}
+
+{% macro delete_row(action, row_id, row) %}
+<form class="icon" method="POST" action="{{ get_url('.delete_view') }}">
+  {{ delete_form.id(value=get_pk_value(row)) }}
+  {{ delete_form.url(value=return_url) }}
+  {% if delete_form.csrf_token %}
+  {{ delete_form.csrf_token }}
+  {% elif csrf_token %}
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  {% endif %}
+  <a href="javascript:void(0)" class="btn-link btn-delete" data-title="{{row}}" title="{{ _gettext('Delete?') }}">
+    <i class="fa fa-trash fa-lg"></i>
+  </a>
+</form>
+{% endmacro %}
+
+{% macro job_action_row(action, row_id, row) %}
+{% if row.type == 0 %}
+  {% if row.status == 0 %}
+  <a class="icon btn-link job-action" href="{{ get_url('.start', id=get_pk_value(row)) }}" title="开始">
+    <i class="fa fa-play-circle fa-lg"></i>
+  </a>
+  {% elif row.status == 1 %}
+  <a class="icon btn-link job-action" href="{{ get_url('.pause', id=get_pk_value(row)) }}" title="暂停">
+    <i class="fa fa-pause-circle fa-lg"></i>
+  </a>
+  <a class="icon btn-link job-action" href="{{ get_url('.stop', id=get_pk_value(row)) }}" title="停止">
+    <i class="fa fa-stop-circle fa-lg"></i>
+  </a>
+  {% elif row.status == 2 %}
+  <a class="icon btn-link job-action" href="{{ get_url('.start', id=get_pk_value(row)) }}" title="开始">
+    <i class="fa fa-play-circle fa-lg"></i>
+  </a>
+  <a class="icon btn-link job-action" href="{{ get_url('.stop', id=get_pk_value(row)) }}" title="停止">
+    <i class="fa fa-stop-circle fa-lg"></i>
+  </a>
+  {% endif %}
+{% elif row.type in (1, 2) %}
+  {% if row.status == 0 %}
+  <a class="icon btn-link job-action" href="{{ get_url('.start', id=get_pk_value(row)) }}" title="发布">
+    <i class="fa fa-cloud-upload fa-lg"></i>
+  </a>
+  {% elif row.status.__and__(240) == 16 %}
+  <a class="icon btn-link job-action" href="{{ get_url('.stop', id=get_pk_value(row)) }}" title="停止">
+    <i class="fa fa-stop-circle fa-lg"></i>
+  </a>
+  {% endif %}
+{% endif %}
+{% endmacro %}

@@ -1,0 +1,60 @@
+{% extends 'admin/master.html' %}
+{% import 'admin/lib.html' as lib with context %}
+{% import 'admin/static.html' as admin_static with context%}
+{% import 'admin/model/layout.html' as model_layout with context %}
+{% import 'admin/actions.html' as actionlib with context %}
+{% import 'admin/model/row_actions.html' as row_actions with context %}
+
+{% block head %}
+  {{ super() }}
+  {{ lib.form_css() }}
+{% endblock %}
+
+{% block body %}
+<section class="content-header">
+  <h1>
+<div class="row" style="line-height: 34px;">
+  <div class="col-md-3" style="width: 330px;">
+    <div class="input-group input-group-append">
+      <input class="form-control" data-role="select2-ajax" data-url="/project/ajax/lookup/"
+        id="current-project" name="current-project" placeholder="选择项目"
+        data-json="{{ current_project and [current_project.id|string, current_project|string]|tojson|forceescape or '' }}"
+        value="{{ current_project and current_project.id|string or '' }}" />
+      <span class="input-group-btn">
+          <a id="change-project" class="btn btn-primary">切换</a>
+      </span>
+    </div>
+  </div>
+  <div class="col-md-5">
+    {{ admin_view.name }}
+  </div>
+</div>
+  </h1>
+</section>
+<section class="content">
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="box box-primary">
+        <div class="box-body">
+
+          {% block model_list_table %}
+<blockquote>
+<p class="text-center">等着瞧 O(∩_∩)O</p>
+</blockquote>
+          {% endblock %}
+          <div class="box-footer clearfix">
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block tail %}
+{{ super() }}
+
+{{ lib.form_js() }}
+{% endblock %}

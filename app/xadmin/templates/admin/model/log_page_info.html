@@ -1,0 +1,95 @@
+{% extends 'admin/master.html' %}
+{% import 'admin/lib.html' as lib with context %}
+
+{% block body %}
+    <section class="content-header">
+        <h1> 页面信息 <small>{{ _gettext('Details') }}</small></h1>
+        {% block navlinks %}{% endblock %}
+        {% block breadcrumb %}
+            <ol class="breadcrumb">
+                <li><a href="{{ admin_view.admin.index_view.url }}"><i class="fa fa-home"></i>{{ _gettext('Home') }}</a></li>
+                <li><a href="{{ admin_view.url }}"><i class="fa fa-list"></i>{{ admin_view.name }}</a></li>
+                <li class="active">{{ _gettext('Details') }}</li>
+            </ol>
+        {% endblock %}
+    </section>
+    <section class="content">
+
+
+  {% block details_table %}
+    <table class="table table-hover table-bordered searchable">
+    {% for page in model %}
+      {% for c in page %}
+        <tr>
+          <td width="100">
+            <b>{{ c }}</b>
+          </td>
+          <td style="word-break: break-word;">
+          {% set val = get_value(page, c) %}
+          {# { get_type(val) } #}
+          {% if val is mapping or (val is sequence and val is not string) %}
+          <div class="p_{{c}}">{{ val | tojson }}</div>
+          {% else %}
+          <div class="p_{{c}}">{{ val }}</div>
+          {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      <tr>
+          <td colspan="10">&nbsp;</td>
+      </tr>
+      <tr>
+          <td colspan="10">&nbsp;</td>
+      </tr>
+    {% endfor %}
+    </table>
+  {% endblock %}
+  </section>
+{% endblock %}
+
+{% block tail %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='vendor/ace/ace.js') }}" type="text/javascript"></script>
+  <link href="{{ url_for('static', filename='vendor/json-viewer/jquery.json-viewer.css') }}" type="text/css" rel="stylesheet" />
+  <script src="{{ url_for('static', filename='vendor/json-viewer/jquery.json-viewer.js') }}"></script>
+<script type="text/javascript">
+function jsonViewer(el) {
+  var $el = $(el);
+  var data = $el.text().replace(/(^\s+)|(\s+$)/g, "");
+  if (data) {
+    var input = eval('(' + data + ')');
+    var options = {
+      collapsed: false,
+      withQuotes: false
+    };
+    $el.jsonViewer(input, options);
+  }
+}
+var width = $('section.content').width();
+$('table.table').width(width);
+
+var opts = {
+  mode: "ace/mode/html",
+  theme: "ace/theme/chrome",
+  wrap: true,
+  fontSize: "14px",
+  showGutter: true,
+  maxLines: 35,
+  minLines: 5
+};
+
+$('.p_content').each(function () {
+  var $this = $(this), editor = ace.edit($this[0]);
+  // editor.session.setMode("ace/mode/html");
+  editor.setOptions(opts);
+})
+
+
+
+
+jsonViewer('.p_request');
+jsonViewer('.p_headers');
+jsonViewer('.p_history');
+
+</script>
+{% endblock %}

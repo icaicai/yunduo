@@ -1,0 +1,42 @@
+{% extends 'admin/model/list.html' %}
+
+
+{% block model_menu_bar %}
+
+{% endblock %}
+
+
+
+{% block tail %}
+  {{ super() }}
+
+<script type="text/javascript">
+
+$('td.list-buttons-column').on('click', 'a.job-action', function (e) {
+    var $this = $(this),
+        href = $this.attr('href');
+    e.preventDefault();
+    $.ajax({
+      url: href,
+      dataType: 'json',
+      cache: false
+    }).done(function (data, textStatus, jqXHR) {
+        if (data && data['success']) {
+            location.reload();
+        } else {
+            iziToast.error({
+                title: '错误',
+                message: '错误:' + textStatus,
+            });
+        }
+    }).fail(function (jqXHR, textStatus, errorThrown) {
+        iziToast.error({
+            title: '错误',
+            message: '错误:' + textStatus,
+        });
+    });
+});
+
+</script>
+
+{% endblock %}

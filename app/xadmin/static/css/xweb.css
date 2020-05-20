@@ -1,0 +1,91 @@
+table.filters td {
+    margin-bottom: 10px;
+}
+
+.main-header .logo {
+	padding: 0;
+	margin: 0;
+}
+
+.admin-flash {
+    border-radius: 0;
+    margin-bottom: 5px;
+}
+
+.form-horizontal .form-group .control-label {
+	white-space: nowrap;
+}
+.form-horizontal .form-group .control-group {
+	margin-left: 100px;
+	position: relative;
+}
+.large-dialog {
+	width: 900px;
+}
+
+.input-group-addon select {
+	border: 0;
+}
+
+.icon {
+	display: inline;
+	padding: 1px 2px;
+}
+.icon button {
+	padding: 0px;
+}
+
+form.admin-form .control-label {
+	float: left;
+	text-align: right;
+	width: 100px;
+}
+form.admin-form .field {
+	margin-left: 110px;
+}
+
+form.admin-form .form-group {
+     margin-right: 0px;
+     margin-left: 0px;
+}
+
+.form_header {
+	border-top: 3px solid #d2d6de;
+	background-color:#f7f7f7;
+	font-size: 16px;
+	font-weight: bold;
+	text-align: left;
+	padding: 10px 15px;
+}
+
+.inline-field .row {
+	margin-left: -10px;
+	margin-right: -10px;
+}
+.inline-field .row .col-md-6 {
+	padding-left: 10px;
+	padding-right: 10px;
+}
+.inline-field .control-label {
+    width: 80px !important;
+}
+.inline-field .field {
+    margin-left: 85px !important;
+}
+.popover {
+	max-width: 600px;
+}
+
+#link_rules .extend-attr {
+
+}
+
+.admin-form .radio {
+	float: left;
+	width: 120px;
+	height: 34px;
+}
+
+.admin-form .checkbox {
+	height: 34px;
+}

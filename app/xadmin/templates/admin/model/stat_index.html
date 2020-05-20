@@ -1,0 +1,324 @@
+{% extends 'admin/master.html' %}
+{% import 'admin/lib.html' as lib with context %}
+{% import 'admin/static.html' as admin_static with context%}
+{% import 'admin/model/layout.html' as model_layout with context %}
+{% import 'admin/actions.html' as actionlib with context %}
+{% import 'admin/model/row_actions.html' as row_actions with context %}
+
+{% block head %}
+  {{ super() }}
+  {{ lib.form_css() }}
+{% endblock %}
+
+{% block body %}
+<section class="content-header">
+  <h1>
+<div class="row" style="line-height: 34px;">
+  <div class="col-md-3" style="width: 330px;">
+    <div class="input-group input-group-append">
+      <input class="form-control" data-role="select2-ajax" data-url="/project/ajax/lookup/"
+        id="current-project" name="current-project" placeholder="选择项目"
+        data-json="{{ current_project and [current_project.id|string, current_project|string]|tojson|forceescape or '' }}"
+        value="{{ current_project and current_project.id|string or '' }}" />
+      <span class="input-group-btn">
+          <a id="change-project" class="btn btn-primary">切换</a>
+      </span>
+    </div>
+  </div>
+  <div class="col-md-5">
+    {{ admin_view.name }}
+  </div>
+</div>
+  </h1>
+</section>
+<section class="content">
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="box box-primary">
+        <div class="box-body">
+
+          {% block model_list_table %}
+
+            {# { lib.render_form(form, return_url, extra(), form_opts) } #}
+    <form action="/stat/stat/" method="GET" role="form" class="admin-form form-horizontal" id="search">
+      <div class="row">
+          <div class="col-md-4">
+        <div class="form-group " id="div_job">
+            <label for="name" class="control-label">关联任务</label>
+            <div class="field">
+              <input class="form-control" data-role="select2-ajax" data-url="/job/ajax/lookup/" id="job" name="job" type="text" data-allow-blank="true" style="">
+            </div>
+        </div>
+        <div class="form-group " id="div_daterange">
+            <label for="name" class="control-label">起止时间</label>
+            <div class="field">
+                <div class="input-group">
+                  <div class="input-group-addon">
+                    <i class="fa fa-clock-o"></i>
+                  </div>
+                  <input type="text" class="form-control pull-right" name="daterange" id="daterange">
+                </div>
+
+            </div>
+        </div>
+          </div>
+          <div class="col-md-4">
+        <div class="form-group " id="div_page">
+            <label for="name" class="control-label">关联页面</label>
+            <div class="field">
+              <input class="form-control" data-role="select2-ajax" data-url="/page/ajax/lookup/" id="page" name="page" type="text" data-allow-blank="true" style="">
+            </div>
+        </div>
+
+        <div class="form-group " id="div_batch_id">
+            <label for="name" class="control-label">关联任务ID</label>
+            <div class="field">
+              <input class="form-control" data-role="select2-ajax" data-url="/job/ajax/lookup/?name=batches" id="batch_id" name="batch_id" type="text" data-allow-blank="true" style="">
+            </div>
+        </div>
+
+          </div>
+          <div class="col-md-4">
+        <div class="form-group " id="div_action">
+            <label for="name" class="control-label">关联动作</label>
+            <div class="field">
+              <input class="form-control" data-role="select2-ajax" data-url="/action/ajax/lookup/" id="action" name="action" type="text" data-allow-blank="true" style="">
+            </div>
+        </div>
+        <div class="form-group " id="div_submit">
+            <label for="name" class="control-label">&nbsp;</label>
+            <div class="field">
+              <button class="btn btn-primary pull-right" type="submit">查询</button>
+            </div>
+        </div>
+          </div>
+      </div>
+
+
+    </form>
+          <div id="myChart" style="height: 620px;"></div>
+
+          {% endblock %}
+          <div class="box-footer clearfix">
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block tail %}
+{{ super() }}
+
+<script src="{{ url_for('static', filename='js/echarts.common.min.js') }}" type="text/javascript"></script>
+
+{{ lib.form_js() }}
+
+
+<script language="javascript">
+
+$(function () {
+    var myChart;
+
+  // change project
+  $('#change-project').click(function () {
+    var val = $("#current-project").select2('val');
+    console.log('-->', val);
+    if (!val || val == "{{current_project.id|string}}") {
+      return;
+    }
+    $.ajax({
+      url: '/project/choose?id='+val,
+      dataType: 'json',
+      cache: false
+    }).done(function( data ) {
+      if (data) {
+        location.reload();
+      }
+  });
+  })
+
+
+function formatDate(date) {
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+
+    return [year, month, day].join('-');
+}
+
+$('#daterange').daterangepicker({
+    locale: {
+        applyLabel: '确定',
+        cancelLabel: '取消',
+        fromLabel: '从',
+        toLabel: '到',
+        weekLabel: '周',
+        customRangeLabel: '自定义范围',
+    },
+    ranges: {
+      '今天': [moment(), moment()],
+      '昨天': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+      '最近7天': [moment().subtract(6, 'days'), moment()],
+      '最近30天': [moment().subtract(29, 'days'), moment()],
+      '这个月': [moment().startOf('month'), moment().endOf('month')]
+    },
+    // timePicker: true,
+    // timePickerIncrement: 30,
+    format: 'YYYY-MM-DD'
+});
+
+
+var frm = $('#search');
+frm.ajaxForm({
+    beforeSubmit: function (arr, $form, options) {
+        var dr = $('#daterange').data('daterangepicker');
+        var endDate = moment(dr.endDate).add(1, 'days')
+
+        arr.push({name: 'start', value: dr.startDate.format('YYYY-MM-DD') });
+        arr.push({name: 'end', value: endDate.format('YYYY-MM-DD') });
+    },
+    success: function(data) {
+        var timeData = data['timeData']
+        var options = {
+            xAxis: [{
+                    type : 'category',
+                    boundaryGap : false,
+                    axisLine: {onZero: true},
+                    data: timeData
+                }, {
+                    gridIndex: 1,
+                    type : 'category',
+                    boundaryGap : false,
+                    axisLine: {onZero: true},
+                    data: timeData,
+                    // position: 'top'
+                }, {
+                    gridIndex: 2,
+                    type : 'category',
+                    boundaryGap : false,
+                    axisLine: {onZero: true},
+                    data: timeData,
+                    // position: 'top'
+                }
+            ],
+            series: data['series']
+        }
+        myChart.setOption(options);
+        console.log(data);
+    }
+});
+
+
+function initChart() {
+    myChart = echarts.init(document.getElementById('myChart'));
+
+    var options = {
+        title: {
+            text: '抓取统计',
+            x: 'center'
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                animation: false
+            }
+        },
+        toolbox: {
+            feature: {
+                dataZoom: {
+                    yAxisIndex: 'none'
+                },
+                restore: {},
+                saveAsImage: {}
+            }
+        },
+        axisPointer: {
+            link: {xAxisIndex: 'all'}
+        },
+        dataZoom: {
+                show: true,
+                realtime: true,
+                start: 50,
+                end: 100,
+                xAxisIndex: [0, 1, 2]
+            },
+        grid: [{
+                left: 50,
+                right: 50,
+                height: '27%'
+            }, {
+                left: 50,
+                right: 50,
+                top: '37%',
+                height: '27%'
+            }, {
+                left: 50,
+                right: 50,
+                top: '64%',
+                height: '27%'
+        }],
+        xAxis : [{
+                type : 'category',
+                boundaryGap : false,
+                axisLine: {onZero: true},
+                // data: timeData
+            }, {
+                gridIndex: 1,
+                type : 'category',
+                boundaryGap : false,
+                axisLine: {onZero: true},
+                // data: timeData,
+                // position: 'top'
+            }, {
+                gridIndex: 2,
+                type : 'category',
+                boundaryGap : false,
+                axisLine: {onZero: true},
+                // data: timeData,
+                // position: 'top'
+        }],
+        yAxis : [
+            {
+                name : '次数',
+                type : 'value',
+                nameLocation: 'middle'
+            },
+            {
+                gridIndex: 1,
+                name : '次数',
+                type : 'value',
+                nameLocation: 'middle'
+                // inverse: true
+            },
+            {
+                gridIndex: 2,
+                name : '数量',
+                type : 'value',
+                nameLocation: 'middle'
+                // inverse: true
+            }
+        ],
+        series: []
+    };
+
+    myChart.setOption(options);
+    console.log(myChart);
+}
+
+
+initChart();
+
+frm.submit();
+})
+
+
+</script>
+{% endblock %}

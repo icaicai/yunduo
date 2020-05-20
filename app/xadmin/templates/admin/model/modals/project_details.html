@@ -1,0 +1,168 @@
+{% import 'admin/static.html' as admin_static with context%}
+{% import 'admin/lib.html' as lib with context %}
+
+{% block body %}
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    {% block header_text %}
+      <h3>{{ model }}</h3>
+    {% endblock %}
+  </div>
+
+  <div class="modal-body">
+
+  {% block details_table %}
+<div style="width: 800px;">
+
+<table id="queue-info" class="table table-striped table-hover model-list">
+  <thead>
+    <tr>
+    <th>Name</th>
+    <th>Consumers</th>
+    <th>State</th>
+    <th>Ready</th>
+    <th>Unacked</th>
+    <th>Total</th>
+    <th>incoming</th>
+    <th>deliver / get</th>
+    <th>ack</th>
+    </tr>
+  </thead>
+  <tbody>
+
+  </tbody>
+</table>
+
+
+<div class="row">
+    <div class="col-md-3">
+      <button id="view-queue" type="button" class="btn btn-default">刷新队列信息</button>
+    </div>
+    <div class="col-md-9 .col-md-offset-6 text-right">
+    {% if model.type == 0 %}
+      <button id="pause-queue" type="button" class="btn btn-default">暂停任务</button>
+      <button id="resume-queue" type="button" class="btn btn-default">恢复任务</button>
+      <button id="purge-de" type="button" class="btn btn-default">清除URL去重数据</button>
+      <button id="purge-queue" type="button" class="btn btn-default">清除任务队列</button>
+    {% endif %}
+    </div>
+</div>
+</div>
+
+
+  {% endblock %}
+  </div>
+{% endblock %}
+
+{% block tail %}
+<script type="text/javascript">
+$(function () {
+
+$( document ).ajaxError(function( event, jqxhr, settings, thrownError ) {
+  $.alert('请求失败' + thrownError, {type: 'danger'});
+});
+
+  var get_value = function(val, path) {
+    var ps = path.split('.'),
+        rtn = val;
+    for (var i = 0; i < ps.length; i++) {
+      rtn = rtn[ps[i]];
+      if (typeof rtn == 'undefined') {
+        return '-';
+        break;
+      }
+    }
+
+    return rtn;
+  }
+
+  function get_queue_info() {
+    $.getJSON("{{url_for('.queue', id=model.id)}}", function (data) {
+      var $tbody = $('#queue-info tbody'),
+          html=[];
+      console.log(data);
+      if (!data || data.length < 1) {
+        $tbody.html('<tr><td colspan="99" align="center">暂无队列信息</td></tr>')
+        return;
+      }
+      var fields = ['name', 'consumers', 'state', 'messages_ready', 'messages_unacknowledged',
+                    'messages', 'message_stats.publish_details.rate', 'message_stats.deliver_get_details.rate',
+                    'message_stats.ack_details.rate'];
+      for (var i=0; i<data.length; i++) {
+        var q = data[i];
+        if (q['idle_since']) {
+          q['state'] = '<a title="Idle since: '+q['idle_since']+'">Idle</a>';
+        }
+        html.push('<tr>');
+        for (var j=0; j<fields.length; j++) {
+          html.push('<td>'+get_value(q, fields[j])+'</td>')
+        }
+        html.push('</tr>');
+      }
+
+      $tbody.html(html.join(''))
+
+    });
+  }
+
+  $('#view-queue').click(get_queue_info);
+  get_queue_info();
+
+{% if model.type == 0 %}
+$('#pause-queue').click(function () {
+    $.confirm('确定要暂停任务 ' + name + ' ？', function () {
+        $.post("{{url_for('.pause', id=model.id)}}", function (resp) {
+            if (resp.success)
+                $.alert('暂停成功');
+            else
+                $.alert('暂停失败');
+            return false;
+        })
+    });
+    return false;
+});
+
+$('#resume-queue').click(function () {
+    $.confirm('确定要恢复任务 ' + name + ' ？', function () {
+        $.post("{{url_for('.start', id=model.id)}}", function (resp) {
+            if (resp.success)
+                $.alert('恢复成功');
+            else
+                $.alert('恢复失败');
+            return false;
+        })
+    });
+    return false;
+});
+
+
+$('#purge-queue').click(function () {
+    $.confirm('确定要清除 ' + name + ' 的队列数据吗？', function () {
+        $.post("{{url_for('.purge', id=model.id)}}", function (resp) {
+            if (resp.success)
+                $.alert('清除成功');
+            else
+                $.alert('清除失败');
+            return false;
+        })
+    });
+    return false;
+});
+
+$('#purge-de').click(function () {
+    $.confirm('确定要清除 ' + name + ' 的URL去重数据吗？', function () {
+        $.post("{{url_for('.purgede', id=model.id)}}", function (resp) {
+            if (resp.success)
+                $.alert('清除成功');
+            else
+                $.alert('清除失败');
+            return false;
+        })
+    });
+    return false;
+});
+{% endif %}
+
+});
+</script>
+{% endblock %}

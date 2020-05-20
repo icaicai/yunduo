@@ -1,0 +1,94 @@
+{% import 'admin/layout.html' as layout with context -%}
+{% import 'admin/static.html' as admin_static with context %}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Log in</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+        <link href="{{ admin_static.url(filename='bootstrap/bootstrap3/css/bootstrap.min.css')}}" rel="stylesheet">
+        <link href="{{ url_for('static', filename='font-awesome/css/font-awesome.min.css')}}" rel="stylesheet">
+        <link href="{{ url_for('static', filename='admin-lte/css/AdminLTE.min.css')}}" rel="stylesheet">
+        <link href="{{ url_for('static', filename='admin-lte/css/skins/skin-blue.min.css')}}" rel="stylesheet">
+
+</head>
+<body class="hold-transition login-page">
+<div style="width: 500px; margin: 40px auto 0;">
+      <blockquote>
+          <p>云朵数据抓取平台</p>
+          <footer><b>分布式</b>的<b>可配置</b>的集抓取、解析、监控、管理等功能的综合平台</footer>
+      </blockquote>
+      <blockquote>
+          <p>Email: admin@xspider.yunduo  /  Password: xyunduo</p>
+      </blockquote>
+</div>
+<div class="login-box">
+  <div class="login-logo">
+    <a href="/">{{ _('Login') }}</a>
+  </div>
+  <!-- /.login-logo -->
+  <div class="login-box-body">
+
+{% macro render_field_with_errors(field) %}
+    {{ field.label }} {{ field(**kwargs)|safe }}
+    {% if field.errors %}
+      <ul>
+      {% for error in field.errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+{% endmacro %}
+
+{% macro render_field(field) %}
+  {{ field(**kwargs)|safe }}
+{% endmacro %}
+
+
+    <p class="login-box-msg">{% include "security/_messages.html" %}</p>
+
+    <form action="{{ url_for_security('login') }}" method="POST" name="login_user_form">
+    {{ login_user_form.hidden_tag() }}
+      <div class="form-group has-feedback">
+        {{ render_field_with_errors(login_user_form.email, class_='form-control') }}
+        <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+      </div>
+      <div class="form-group has-feedback">
+        {{ render_field_with_errors(login_user_form.password, class_='form-control') }}
+        <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+      </div>
+      <div class="row">
+        <div class="col-xs-8">
+          <div class="checkbox">
+            <label>
+              {{ render_field(login_user_form.remember) }} {{ _("Remember Me ") }}
+            </label>
+          </div>
+        </div>
+        <!-- /.col -->
+        <div class="col-xs-4">
+          {{ render_field(login_user_form.submit, class_="btn btn-primary btn-block btn-flat") }}
+        </div>
+        <!-- /.col -->
+      </div>
+      {# { render_field(login_user_form.next) } #}
+    </form>
+
+
+    <!-- /.social-auth-links -->
+
+
+  </div>
+  <!-- /.login-box-body -->
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery 2.2.3 -->
+    <script src="{{ admin_static.url(filename='vendor/jquery.min.js', v='2.1.4') }}" type="text/javascript"></script>
+    <script src="{{ admin_static.url(filename='bootstrap/bootstrap3/js/bootstrap.min.js', v='3.3.5') }}" type="text/javascript"></script>
+
+</body>
+</html>

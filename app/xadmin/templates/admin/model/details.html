@@ -1,0 +1,44 @@
+{% extends 'admin/master.html' %}
+{% import 'admin/lib.html' as lib with context %}
+
+{% block body %}
+    <section class="content-header">
+        <h1>{{ admin_view.name }} <small>{{ _gettext('Details') }}</small></h1>
+        {% block navlinks %}{% endblock %}
+        {% block breadcrumb %}
+            <ol class="breadcrumb">
+                <li><a href="{{ admin_view.admin.index_view.url }}"><i class="fa fa-home"></i>{{ _gettext('Home') }}</a></li>
+                <li><a href="{{ admin_view.url }}"><i class="fa fa-list"></i>{{ admin_view.name }} {{ _gettext('List') }}</a></li>
+                <li class="active">{{ _gettext('Details') }}</li>
+            </ol>
+        {% endblock %}
+    </section>
+    <section class="content">
+  {% block details_search %}
+    <div class="input-group fa_filter_container col-lg-6">
+      <span class="input-group-addon">{{ _gettext('Filter') }}</span>
+      <input id="fa_filter" type="text" class="form-control">
+    </div>
+  {% endblock %}
+
+  {% block details_table %}
+    <table class="table table-hover table-bordered searchable">
+    {% for c, name in details_columns %}
+      <tr>
+        <td>
+          <b>{{ name }}</b>
+        </td>
+        <td>
+        {{ get_value(model, c) }}
+        </td>
+      </tr>
+    {% endfor %}
+    </table>
+  {% endblock %}
+  </section>
+{% endblock %}
+
+{% block tail %}
+  {{ super() }}
+  <script src="{{ admin_static.url(filename='admin/js/details_filter.js', v='1.0.0') }}"></script>
+{% endblock %}

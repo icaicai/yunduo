@@ -1,0 +1,72 @@
+{% extends 'admin/master.html' %}
+{% import 'admin/lib.html' as lib with context %}
+
+{% block body %}
+    <section class="content-header">
+        <h1>{{ admin_view.name }} <small>任务信息</small></h1>
+        {% block navlinks %}{% endblock %}
+        {% block breadcrumb %}
+            <ol class="breadcrumb">
+                <li><a href="{{ admin_view.admin.index_view.url }}"><i class="fa fa-home"></i>{{ _gettext('Home') }}</a></li>
+                <li><a href="{{ admin_view.url }}"><i class="fa fa-list"></i>{{ admin_view.name }}</a></li>
+                <li class="active">{{ _gettext('Details') }}</li>
+            </ol>
+        {% endblock %}
+    </section>
+    <section class="content">
+
+    <table class="table table-hover table-bordered searchable">
+        {% if model %}
+      {% for c in model %}
+        <tr>
+          <td width="100">
+            <b>{{ c }}</b>
+          </td>
+          <td style="word-break: break-word;">
+          {% set val = get_value(model, c) %}
+          {# { get_type(val) } #}
+          {% if val is mapping or (val is sequence and val is not string) %}
+          <div class="p_{{c}}">{{ val | tojson }}</div>
+          {% else %}
+          <div class="p_{{c}}">{{ val }}</div>
+          {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+        {% else %}
+      <tr>
+          <td colspan="10">没有任务详情</td>
+      </tr>
+        {% endif %}
+    </table>
+
+  </section>
+{% endblock %}
+
+{% block tail %}
+  {{ super() }}
+  <link href="{{ url_for('static', filename='vendor/json-viewer/jquery.json-viewer.css') }}" type="text/css" rel="stylesheet" />
+  <script src="{{ url_for('static', filename='vendor/json-viewer/jquery.json-viewer.js') }}"></script>
+<script type="text/javascript">
+  var data = $('.p_kwargs').text().replace(/(^\s+)|(\s+$)/g, "");
+  if (data) {
+    var input = eval('(' + data + ')');
+    var options = {
+      collapsed: false,
+      withQuotes: true
+    };
+    $('.p_kwargs').jsonViewer(input, options);
+  }
+
+  var data = $('.p_meta').text().replace(/(^\s+)|(\s+$)/g, "");
+  if (data) {
+    var input = eval('(' + data + ')');
+    var options = {
+      collapsed: false,
+      withQuotes: true
+    };
+    $('.p_meta').jsonViewer(input, options);
+  }
+</script>
+
+{% endblock %}

@@ -1,0 +1,235 @@
+
+{% macro extra() %}
+  <input name="_check_conf" id="_check_conf" type="button" class="btn btn-info" value="测试页面设置" />
+  {% if admin_view.can_edit %}
+  <input name="_continue_editing" type="submit" class="btn btn-default" value="{{ _gettext('Save and Continue Editing') }}" />
+  {% endif %}
+{% endmacro %}
+
+
+{% macro new_simple_js(klass, url, title) %}
+
+  $(document).on('click', '{{klass}}', function (e) {
+    console.log('click', e)
+    e.preventDefault();
+    $('#page-simple-modal').iziModal({
+      title: "{{title}}",
+      autoOpen: true,
+      onOpening: function (modal) {
+        modal.startLoading();
+
+        $.get('{{url}}', function(data) {
+            $("#page-simple-modal .iziModal-content").html(data);
+
+        setTimeout(function () {
+            var frm = $('#page-simple-modal form');
+            frm.ajaxForm(function(data) {
+
+              if (data['status'] == 'success') {
+                iziToast.success({message: data['message'], position: 'center'});
+                $('#page-simple-modal').iziModal('close');
+              } else {
+                iziToast.error({message: data['message'], position: 'center'});
+              }
+                // console.log('ajaxForm resp ==> ', resp);
+                // alert("Thank you for your comment!");
+            });
+        }, 100);
+
+            modal.stopLoading();
+        });
+      }
+    });
+  });
+
+
+{% endmacro %}
+
+{% macro job_js() %}
+<div id="page-simple-modal"></div>
+<script type="text/javascript">
+$(function () {
+  $("input[name=entry_type]:radio").click(function(){
+    var val = $(this).val();
+    if (val == 0) {
+      $('#div_entry_url').show();
+      $('#div_entry_page').show();
+      $('#div_entry_script').hide();
+    } else if (val == 1) {
+      $('#div_entry_url').hide();
+      $('#div_entry_page').hide();
+      $('#div_entry_script').show();
+   } else {
+
+   }
+  });
+
+  $("#type").change(function(){
+    var val = $(this).val();
+    console.log('==--===', val);
+    if (val == '1') {
+      $('#div_schedule').show();
+      $('#div_schedule_type').show();
+   } else {
+      $('#div_schedule').hide();
+      $('#div_schedule_type').hide();
+   }
+  });
+
+  {{ new_simple_js('.new-page-simple', '/page/simple', '新建页面') }}
+  {{ new_simple_js('.new-script-simple', '/script/simple', '新建脚本') }}
+
+  $("input[name=entry_type]:checked").trigger('click');
+  $("#type").trigger('change');
+
+})
+</script>
+{% endmacro %}
+
+{% macro page_js() %}
+<div id="page-simple-modal"></div>
+
+<div id="_check_result" class="box box-warning box-solid" style="position: fixed; right: 10px; top: 50px; display: none; z-index: 99999; max-width: 50%; max-height: 90%; overflow: auto;">
+</div>
+
+<script type="text/javascript">
+$(function () {
+
+  {{ new_simple_js('.new-page-simple', '/page/simple', '新建页面') }}
+
+  $('#_check_conf').click(function (e) {
+      e.preventDefault();
+      console.log('_check_conf click');
+      $("#_check_result").iziModal({
+          title: "页面配置测试结果",
+          autoOpen: true,
+          overlayClose: false,
+          overlay: false,
+          fullscreen: true,
+          onOpening: function(modal){
+
+              modal.startLoading();
+              modal.setContent('<p>Checking</p>');
+              $('.content form').ajaxSubmit({
+                  url: '{{url_for(".check")}}',
+                  success: function(data) {
+                    var c = (data.debugs || []).join('\n'),
+                        d = (data.messages || []).join('\n');
+                    // console.log(d);
+
+                    $("#_check_result .iziModal-content").html(['<pre>', c, '\n', d, '</pre>'].join('\n'));
+
+                    modal.stopLoading();
+
+                  }
+              });
+          }
+
+      });
+
+  })
+
+
+  $('#js_enable').change(function () {
+    var $this = $(this),
+        checked = $this.prop('checked');
+    if (checked) {
+      $('#div_js_timeout').show();
+      $('#div_js_code').show();
+    } else {
+      $('#div_js_timeout').hide();
+      $('#div_js_code').hide();
+    }
+  });
+
+  $('#item_type').change(function () {
+    var $this = $(this),
+        val = $this.val(),
+        type = $('#project_type').val();
+
+    if (type == 0 && val) {
+      $('#div_item_save_script').show();
+    } else {
+      $('#div_item_save_script').hide();
+    }
+
+
+    if (val == 'conf') {
+      $('#div_item_pycode').hide();
+      $('#div_item_fields').show();
+    } else if (val == 'code') {
+      $('#div_item_pycode').show();
+      $('#div_item_fields').hide();
+    } else {
+      $('#div_item_pycode').hide();
+      $('#div_item_fields').hide();
+      $('#div_item_save_script').hide();
+    }
+  });
+
+  $('#link_type').change(function () {
+    var $this = $(this),
+        val = $this.val();
+
+    if (val == 'conf') {
+      $('#div_link_pycode').hide();
+      $('#div_link_rules').show();
+    } else if (val == 'code') {
+      $('#div_link_pycode').show();
+      $('#div_link_rules').hide();
+    } else {
+      $('#div_link_pycode').hide();
+      $('#div_link_rules').hide();
+
+    }
+  });
+
+  $('#js_enable').trigger('change');
+  $('#item_type').trigger('change');
+  $('#link_type').trigger('change');
+
+});
+</script>
+
+{% endmacro %}
+
+{% macro action_js() %}
+<script type="text/javascript">
+$(function () {
+  $('#_check_conf').click(function (e) {
+    e.preventDefault();
+
+    var frm = $('.content form');
+    console.log(frm);
+    $('.content form').ajaxSubmit({
+        url: '{{url_for(".check")}}',
+        success: function(data) {
+
+          var c = data.debugs.join('\n'),
+              d = data.messages.join('\n');
+          // console.log(d);
+          $('#_check_result .box-body').html(['<pre>', c, '\n', d, '</pre>'].join('\n'))
+          $('#_check_result').show();
+
+        }
+    });
+  })
+
+  $("input[name=lang]:radio").click(function(){
+    var val = $(this).val();
+    if (val == 0) {
+      $('#div_jscode').show();
+      $('#div_pycode').hide();
+    } else if (val == 1) {
+      $('#div_jscode').hide();
+      $('#div_pycode').show();
+   } else {
+
+   }
+  });
+
+  $("input[name=lang]:checked").trigger('click');
+
+});
+</script>
+{% endmacro %}

@@ -1,0 +1,42 @@
+
+
+
+
+{% macro js() %}
+在 [x] 秒，[平均|累计] 发生 [x事件] [大于|等于|小于] [x]时，执行 [报警|暂停|停止|Script]
+[x event] 在 [x window] [平均|累计] 发生 [大于|等于|小于] [x次] 时，执行 [报警|暂停|停止|Script]
+
+<div id="_check_result" class="box box-warning box-solid" style="position: fixed; right: 10px; top: 50px; display: none; z-index: 99999; max-width: 50%; max-height: 90%; overflow: auto;">
+  <div class="box-header with-border">
+    <h3 class="box-title">设置测试结果</h3>
+    <div class="box-tools pull-right">
+      <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+      <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+    </div>
+  </div>
+  <div class="box-body">
+    <pre></pre>
+  </div>
+</div>
+
+
+
+<script type="text/javascript">
+var rules = [{
+    name: '任务异常',
+    field: 't_0',
+    range: [[0, ''], [300, '5分钟'], [600, '10分钟']],
+    transform: [['always', '总是'], ['once', '只要有一次'], ['mean', '平均']],
+    compare: [['gt', '大于']],
+    value: 0
+}, {
+    name: '下载异常',
+    field: ''
+}];
+$(function () {
+
+
+});
+</script>
+
+{% endmacro %}

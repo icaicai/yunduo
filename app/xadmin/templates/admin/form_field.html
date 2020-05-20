@@ -1,0 +1,97 @@
+{% macro form_field(form, field, print_status=True) -%}
+    {% set has_label = kwargs.pop('has_label', True) %}
+    {% set placeholder = '' %}
+    {% if not has_label %}
+        {% set placeholder = field.label.text %}
+    {% endif %}
+    {% set field_status = '' %}
+    {% if form.errors and (form.submitted or (form.is_submitted() and form.submit.data)) %}
+        {# form.submit.data for support multiple forms on page #}
+        {# form.submitted - manual control for form without button (ajax) #}
+        {# If form has error, password field would be empty in repeat form
+           and user need to retype this value.
+           That is why we need to mark password field always as `error`,
+           to draw user attention
+         #}
+        {# Simulate error for password field (because if form has errors this fields is empty after reloading page) #}
+        {# Can reset this simulations with field.hide_error = True (need to sing in form) #}
+        {% if field.type == 'PasswordField' and not field.hide_error %}
+            {% set field_status = 'error' %}
+            {% set field_errors = ['Please retype password'] %}
+        {% else %}
+            {% if field.errors %}
+                {% set field_status = 'error' %}
+            {% else %}
+                {% set field_status = 'success' %}
+            {% endif %}
+        {% endif %}
+    {% endif %}
+    <div class="form-group {{ field_status }}">
+         {% if has_label and field.label.text and 'BooleanField' not in field.type %}
+            <label for="{{ field.id }}" class="control-label">
+                {{ field.label.text }}{% if field.flags.required %} <span class="required">*</span>{% endif %}
+            </label>
+        {% endif %}
+        <div class="controls">
+            {% set class_ = kwargs.pop('class_', '') %}
+            {% if 'BooleanField' in field.type %}
+                <div class="checkbox">
+                    <label for="{{ field.id }}">
+                        {{ field(class_=class_, **kwargs) }}
+                        {{ field.label.text | safe }}
+                    </label>
+                </div>
+            {% elif 'RadioField' in field.type %}
+                {% for value, label, checked in field.iter_choices() %}
+                    <div class="radio">
+                    {% if checked  %}
+                        <label>
+                            <input type="radio" name="{{ field.id }}" id="{{ field.id }}" value="{{ value }}"
+                              checked="True">{{ label }}
+                        </label>
+                    {% else %}
+                        <label>
+                            <input type="radio" name="{{ field.id }}" id="{{ field.id }}" value="{{ value }}">{{ label }}
+                        </label>
+                    {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                {% set class_ = class_ ~ ' form-control' %}
+                {% set prepend = kwargs.pop('prepend', None) %}
+                {% set append = kwargs.pop('append', None) %}
+                {% if append or prepend %}
+                    {% if append and prepend %}
+                        <div class="input-group input-group-prepend input-group-append">
+                            <span class="input-group-addon">{{ prepend | safe  }}</span>
+                            {{ field(class_=class_, placeholder=placeholder, **kwargs) }}
+                            <span class="input-group-addon">{{ append | safe }}</span>
+                        </div>
+                    {% elif prepend %}
+                        <div class="input-group input-group-prepend">
+                            <span class="input-group-addon">{{ prepend | safe  }}</span>
+                            {{ field(class_=class_, placeholder=placeholder, **kwargs) }}
+                        </div>
+                    {% elif append %}
+                        <div class="input-group input-group-append">
+                            {{ field(class_=class_, placeholder=placeholder, **kwargs) }}
+                            <span class="input-group-addon">{{ append | safe  }}</span>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    {{ field(class_=class_, placeholder=placeholder, **kwargs) }}
+                {% endif %}
+            {% endif %}
+            {% if field.description %}
+                <p class="help-block">{{ field.description|safe }}</p>
+            {% endif %}
+            {% if print_status %}
+                {% if field_status == 'error' %}
+                    <p class="error">{{ field.errors|join('<br/>') or field_errors|join('<br/>') }}</p>
+                {% elif  field_status == 'success' %}
+                    <p class="success">Field is ok</p>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+{%- endmacro %}
